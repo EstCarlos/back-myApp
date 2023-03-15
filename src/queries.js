@@ -35,6 +35,48 @@ const getProductos = (req, res) => {
   });
 };
 
+const getSuplidor = (req, res) => {
+  pool.query("select * from suplidor", (error, results) => {
+    if (error) {
+      throw error;
+    }
+    res.status(200).json(results.rows);
+  });
+};
+
+const getLocalidad = (req, res) => {
+  pool.query("select * from localidad", (error, results) => {
+    if (error) {
+      throw error;
+    }
+    res.status(200).json(results.rows);
+  });
+};
+
+const getUser = (req, res) => {
+  pool.query("select * from usuarios", (error, results) => {
+    if (error) {
+      throw error;
+    }
+    res.status(200).json(results.rows);
+  });
+};
+
+const ExecSuplidores = (req, res) => {
+  const { nombre_suplidor } = req.body;
+
+  pool.query(
+    "CALL registrar_suplidores($1)",
+    [nombre_suplidor],
+    (error, results) => {
+      if (error) {
+        throw error;
+      }
+      res.status(200).json(results.rows);
+    }
+  );
+};
+
 const ExecEntradas = (req, res) => {
   const {
     fecha,
@@ -77,4 +119,8 @@ module.exports = {
   getSalidas,
   getProductos,
   ExecEntradas,
+  getSuplidor,
+  getLocalidad,
+  getUser,
+  ExecSuplidores,
 };

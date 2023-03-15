@@ -25,4 +25,9 @@ app.listen(port, () => {
 app.get("/entradas", db.getEntradas);
 app.get("/salidas", db.getSalidas);
 app.get("/productos", db.getProductos);
-app.post("/execEntradas", db.ExecEntradas);
+app.get("/suplidor", db.getSuplidor);
+app.get("/localidad", db.getLocalidad);
+app.get("/usuarios", db.getUser);
+
+app.post("/execsuplidores", db.ExecSuplidores);
+app.post("/execentradas", db.ExecEntradas);
