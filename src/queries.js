@@ -1,4 +1,6 @@
 const { Pool } = require("pg");
+const jwt = require("jsonwebtoken");
+const bcrypt = require("bcrypt");
 
 const pool = new Pool({
   user: "postgres",
@@ -79,30 +81,30 @@ const ExecSuplidores = (req, res) => {
 
 const ExecEntradas = (req, res) => {
   const {
+    codigo_producto,
     fecha,
-    idProducto,
     producto,
     precio,
     suplidor,
+    plaza,
     cantidad,
     encargado,
     usuario,
-    plaza,
     costo,
   } = req.body;
 
   pool.query(
     "CALL registrar_entrada($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)",
     [
+      codigo_producto,
       fecha,
-      idProducto,
       producto,
       precio,
       suplidor,
+      plaza,
       cantidad,
       encargado,
       usuario,
-      plaza,
       costo,
     ],
     (error, results) => {
@@ -114,6 +116,95 @@ const ExecEntradas = (req, res) => {
   );
 };
 
+const Register = async (req, res) => {
+  try {
+    const { nombre, apellido, email, password } = req.body;
+
+    // Verificar si el usuario ya existe en la base de datos
+    const userExist = await pool.query(
+      "SELECT * FROM usuarios WHERE email = $1",
+      [email]
+    );
+    if (userExist.rows.length > 0) {
+      return res.status(400).json({ mensaje: "El usuario ya existe" });
+    }
+
+    // Encriptar la contraseña
+    const saltRounds = 10;
+    const hashedPassword = await bcrypt.hash(password, saltRounds);
+
+    // Insertar el nuevo usuario en la base de datos
+    const newUser = await pool.query(
+      "INSERT INTO usuarios (nombre_user, apellido_user, email, password) VALUES ($1, $2, $3, $4) RETURNING *",
+      [nombre, apellido, email, hashedPassword]
+    );
+
+    // Crear y enviar el token JWT con la información del usuario
+    const token = jwt.sign(
+      {
+        id: newUser.rows[0].id_user,
+        nombre: newUser.rows[0].nombre_user,
+        apellido: newUser.rows[0].apellido_user,
+        email: newUser.rows[0].email,
+      },
+      "tu_secreto",
+      { expiresIn: "1h" }
+    );
+
+    res.status(201).json({ token });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ mensaje: "Error interno del servidor" });
+  }
+};
+
+const login = async (req, res) => {
+  try {
+    const { email, password } = req.body;
+
+    // Verificar si el usuario existe en la base de datos
+    const user = await pool.query("SELECT * FROM usuarios WHERE email = $1", [
+      email,
+    ]);
+
+    if (user.rows.length === 0) {
+      return res.status(401).json({ mensaje: "El usuario no existe" });
+    }
+
+    // Verificar si la contraseña es correcta
+    const passwordMatch = await bcrypt.compare(password, user.rows[0].password);
+    if (!passwordMatch) {
+      return res
+        .status(401)
+        .json({ mensaje: "Email o contraseña incorrectos" });
+    }
+
+    // Crear y enviar el token JWT con la información del usuario
+    const token = jwt.sign(
+      {
+        id: user.rows[0].id_user,
+        nombre: user.rows[0].nombre_user,
+        apellido: user.rows[0].apellido_user,
+        email: user.rows[0].email,
+        fullName: `${user.rows[0].nombre_user} ${user.rows[0].apellido_user}`,
+      },
+      "tu_secreto",
+      { expiresIn: "1h" }
+    );
+
+    res
+      .status(200)
+      .json({
+        token,
+        nombre: user.rows[0].nombre_user,
+        apellido: user.rows[0].apellido_user,
+      });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ mensaje: "Error interno del servidor" });
+  }
+};
+
 module.exports = {
   getEntradas,
   getSalidas,
@@ -123,4 +214,6 @@ module.exports = {
   getLocalidad,
   getUser,
   ExecSuplidores,
+  Register,
+  login,
 };

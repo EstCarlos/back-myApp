@@ -31,3 +31,5 @@ app.get("/usuarios", db.getUser);
 
 app.post("/execsuplidores", db.ExecSuplidores);
 app.post("/execentradas", db.ExecEntradas);
+app.post("/registro", db.Register);
+app.post("/login", db.login);
