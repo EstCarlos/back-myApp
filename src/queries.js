@@ -85,31 +85,33 @@ const ExecEntradas = (req, res) => {
     fecha,
     producto,
     precio,
-    suplidor,
-    plaza,
+    id_suplidor,
+    id_plaza,
     cantidad,
-    encargado,
-    usuario,
+    encargado_entrega,
+    quien_registra,
     costo,
   } = req.body;
-
+  console.log(req);
   pool.query(
-    "CALL registrar_entrada($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)",
+    "CALL registrar_entrada ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)",
     [
       codigo_producto,
       fecha,
       producto,
       precio,
-      suplidor,
-      plaza,
+      id_suplidor,
+      id_plaza,
       cantidad,
-      encargado,
-      usuario,
+      encargado_entrega,
+      quien_registra,
       costo,
     ],
     (error, results) => {
       if (error) {
-        throw error;
+        // Envia una respuesta de error con un mensaje y un código HTTP 500
+        res.status(500).json({ message: "Error al ejecutar la consulta" });
+        return;
       }
       res.status(200).json(results.rows);
     }
@@ -192,13 +194,10 @@ const login = async (req, res) => {
       { expiresIn: "1h" }
     );
 
-    res
-      .status(200)
-      .json({
-        token,
-        nombre: user.rows[0].nombre_user,
-        apellido: user.rows[0].apellido_user,
-      });
+    res.status(200).json({
+      token,
+      user: `${user.rows[0].nombre_user} ${user.rows[0].apellido_user}`,
+    });
   } catch (error) {
     console.error(error);
     res.status(500).json({ mensaje: "Error interno del servidor" });
