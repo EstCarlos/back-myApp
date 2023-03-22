@@ -92,7 +92,7 @@ const ExecEntradas = (req, res) => {
     quien_registra,
     costo,
   } = req.body;
-  console.log(req);
+
   pool.query(
     "CALL registrar_entrada ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)",
     [
@@ -106,6 +106,41 @@ const ExecEntradas = (req, res) => {
       encargado_entrega,
       quien_registra,
       costo,
+    ],
+    (error, results) => {
+      if (error) {
+        // Envia una respuesta de error con un mensaje y un código HTTP 500
+        res.status(500).json({ message: "Error al ejecutar la consulta" });
+        return;
+      }
+      res.status(200).json(results.rows);
+    }
+  );
+};
+
+const ExecSalidas = (req, res) => {
+  const {
+    codigo_producto,
+    fecha,
+    id_suplidor,
+    id_plaza,
+    producto,
+    cantidad,
+    precio_unitario,
+    precio_total,
+  } = req.body;
+
+  pool.query(
+    "CALL registrar_salida($1, $2, $3, $4, $5, $6, $7, $8);",
+    [
+      codigo_producto,
+      fecha,
+      id_suplidor,
+      id_plaza,
+      producto,
+      cantidad,
+      precio_unitario,
+      precio_total,
     ],
     (error, results) => {
       if (error) {
@@ -209,6 +244,7 @@ module.exports = {
   getSalidas,
   getProductos,
   ExecEntradas,
+  ExecSalidas,
   getSuplidor,
   getLocalidad,
   getUser,
