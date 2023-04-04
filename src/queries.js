@@ -10,6 +10,24 @@ const pool = new Pool({
   port: 5432,
 });
 
+const Stock = (req, res) => {
+  pool.query(
+    `SELECT p.codigo_producto, p.nombre_producto, s.nombre_suplidor, pl.nombre_local, p.inventario_actual, p.fecha
+    FROM Productos p
+    JOIN suplidor s ON p.id_suplidor = s.id_suplidor
+    JOIN localidad pl ON p.id_plaza = pl.id_plaza
+    `,
+    (error, results) => {
+      if (error) {
+        // Envia una respuesta de error con un mensaje y un código HTTP 500
+        res.status(500).json({ message: "Error al ejecutar al cargar" });
+        return;
+      }
+      res.status(200).json(results.rows);
+    }
+  );
+};
+
 const getEntradas = (req, res) => {
   pool.query("select * from entradas", (error, results) => {
     if (error) {
@@ -35,6 +53,21 @@ const getProductos = (req, res) => {
     }
     res.status(200).json(results.rows);
   });
+};
+
+const getProductosByCodigo = (req, res) => {
+  const codigo_producto = req.params.codigo_producto;
+
+  pool.query(
+    "SELECT * FROM productos WHERE codigo_producto = $1",
+    [codigo_producto],
+    (error, results) => {
+      if (error) {
+        throw error;
+      }
+      res.status(200).json(results.rows);
+    }
+  );
 };
 
 const getSuplidor = (req, res) => {
@@ -90,7 +123,7 @@ const ExecEntradas = (req, res) => {
     cantidad,
     encargado_entrega,
     quien_registra,
-    costo,
+    costo_por_unidad,
   } = req.body;
 
   pool.query(
@@ -105,7 +138,7 @@ const ExecEntradas = (req, res) => {
       cantidad,
       encargado_entrega,
       quien_registra,
-      costo,
+      costo_por_unidad,
     ],
     (error, results) => {
       if (error) {
@@ -184,7 +217,7 @@ const Register = async (req, res) => {
         apellido: newUser.rows[0].apellido_user,
         email: newUser.rows[0].email,
       },
-      "tu_secreto",
+      "HoratioHire$&@2015",
       { expiresIn: "1h" }
     );
 
@@ -225,7 +258,7 @@ const login = async (req, res) => {
         email: user.rows[0].email,
         fullName: `${user.rows[0].nombre_user} ${user.rows[0].apellido_user}`,
       },
-      "tu_secreto",
+      "HoratioHire$&@2015",
       { expiresIn: "1h" }
     );
 
@@ -243,6 +276,7 @@ module.exports = {
   getEntradas,
   getSalidas,
   getProductos,
+  getProductosByCodigo,
   ExecEntradas,
   ExecSalidas,
   getSuplidor,
@@ -251,4 +285,5 @@ module.exports = {
   ExecSuplidores,
   Register,
   login,
+  Stock,
 };
