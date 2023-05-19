@@ -1,6 +1,7 @@
 const { Pool } = require("pg");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
+const config = require("../config");
 
 const pool = new Pool({
   // user: "postgres",
@@ -8,11 +9,11 @@ const pool = new Pool({
   // database: "inventary",
   // password: "admin",
   // port: 5432,
-  user: "postgre",
-  host: "inventory.ceafsddk5knq.us-east-1.rds.amazonaws.com",
-  database: "inventory",
-  password: "lebronjames",
-  port: 5432,
+  user: config.DB_USER,
+  host: config.DB_USER,
+  database: config.DB_NAME,
+  password: config.DB_PASSWORD,
+  port: config.DB_PORT,
 });
 
 const Stock = (req, res) => {
