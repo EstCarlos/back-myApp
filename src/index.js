@@ -8,8 +8,6 @@ const db = require("./queries");
 app.use(cors());
 
 const allowedOrigins = [
-  "capacitor://localhost",
-  "ionic://localhost",
   "http://localhost",
   "http://localhost:8080",
   "http://localhost:8100",
@@ -60,3 +58,5 @@ app.post("/execentradas", db.ExecEntradas);
 app.post("/execsalidas", db.ExecSalidas);
 app.post("/registro", db.Register);
 app.post("/login", db.login);
+
+app.delete("/suplidores/:id_suplidor", db.EliminarProductos);

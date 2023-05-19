@@ -3,10 +3,15 @@ const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 
 const pool = new Pool({
-  user: "postgres",
-  host: "localhost",
-  database: "inventary",
-  password: "admin",
+  // user: "postgres",
+  // host: "localhost",
+  // database: "inventary",
+  // password: "admin",
+  // port: 5432,
+  user: "postgre",
+  host: "inventory.ceafsddk5knq.us-east-1.rds.amazonaws.com",
+  database: "inventory",
+  password: "lebronjames",
   port: 5432,
 });
 
@@ -272,6 +277,17 @@ const login = async (req, res) => {
   }
 };
 
+const EliminarProductos = async (req, res) => {
+  const { id_suplidor } = req.params;
+
+  pool.query("CALL eliminar_registro($1)", [id_suplidor], (error, results) => {
+    if (error) {
+      throw error;
+    }
+    res.status(200).json({ mensaje: "Eliminado exitosamente" });
+  });
+};
+
 module.exports = {
   getEntradas,
   getSalidas,
@@ -286,4 +302,5 @@ module.exports = {
   Register,
   login,
   Stock,
+  EliminarProductos,
 };
